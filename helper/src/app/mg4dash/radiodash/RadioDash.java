@@ -276,9 +276,13 @@ public final class RadioDash {
             cell.setBackground(panel(a, Color.TRANSPARENT, 16));
             ImageView icon = new ImageView(a);
             int res = a.getResources().getIdentifier(it[0], "drawable", a.getPackageName());
-            if (res != 0) icon.setImageResource(res);
             boolean accent = it[0].equals("rd_ic_navigation");
-            icon.setColorFilter(Palette.map(accent ? ACTION : SUB));
+            android.graphics.drawable.Drawable own = accent ? projectionIcon(a) : null;
+            if (own != null) icon.setImageDrawable(own);
+            else {
+                if (res != 0) icon.setImageResource(res);
+                icon.setColorFilter(Palette.map(accent ? ACTION : SUB));
+            }
             cell.addView(icon, new LinearLayout.LayoutParams(dp(a, 30), dp(a, 30)));
             TextView label = text(a, it[1], 19, accent ? TEXT : SUB);
             label.setPadding(dp(a, 12), 0, 0, 0);
@@ -334,8 +338,12 @@ public final class RadioDash {
             cell.setBackground(panel(a, Color.TRANSPARENT, 16));
             ImageView icon = new ImageView(a);
             int res = a.getResources().getIdentifier(it[0], "drawable", a.getPackageName());
-            if (res != 0) icon.setImageResource(res);
-            icon.setColorFilter(Palette.map(SUB));
+            android.graphics.drawable.Drawable own = it[0].equals("rd_ic_projection") ? projectionIcon(a) : null;
+            if (own != null) icon.setImageDrawable(own);
+            else {
+                if (res != 0) icon.setImageResource(res);
+                icon.setColorFilter(Palette.map(SUB));
+            }
             cell.addView(icon, new FrameLayout.LayoutParams(dp(a, iconDp), dp(a, iconDp), Gravity.CENTER));
             if (it[0].equals("rd_ic_settings")) {
                 final android.view.GestureDetector gd = new android.view.GestureDetector(a, new android.view.GestureDetector.SimpleOnGestureListener() {
@@ -360,6 +368,25 @@ public final class RadioDash {
         if (Palette.rightBar) blp.setMargins(0, dp(a, 12), dp(a, 16), dp(a, 12));
         else blp.setMargins(dp(a, 16), dp(a, 12), 0, dp(a, 12));
         content.addView(bar, blp);
+    }
+
+    /**
+     * Icon of the Android Auto button (#5): CarPlay's own icon, as on MG4Dash's bar, or the chosen app's icon, in
+     * colour; null for Android Auto, which keeps the bar's pictogram.
+     */
+    static android.graphics.drawable.Drawable projectionIcon(Activity a) {
+        String pkg = Palette.aaChoice == 1 ? "com.allgo.carplay.service"
+                : Palette.aaChoice == 2 && Palette.aaApp != null ? Palette.aaApp.split("/")[0] : null;
+        if (pkg == null) return null;
+        try {
+            if (Palette.aaChoice == 2) {
+                ComponentName cn = ComponentName.unflattenFromString(Palette.aaApp);
+                if (cn != null) return a.getPackageManager().getActivityIcon(cn);
+            }
+            return a.getPackageManager().getApplicationIcon(pkg);
+        } catch (Throwable t) {
+            return null;
+        }
     }
 
     /** Name of the Android Auto button: CarPlay or the chosen app's name when MG4Dash says so (#5). */
