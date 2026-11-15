@@ -30,7 +30,11 @@ On the player, **◀ ▶** go to the previous / next station of the list; a **lo
 
 ### What's new in this fork
 
-**[1.6.3 beta 3](https://github.com/Skittle6938/MG4Radio/releases/tag/v1.6.3-beta.3) (in testing)**
+**[1.6.3 beta 4](https://github.com/Skittle6938/MG4Radio/releases/tag/v1.6.3-beta.4) (in testing)**
+- **Favourite star easier to see**: a rounded square filled with the theme colour and a white star for a favourite, a dark square with a light hollow star otherwise, on the station tiles of every band and on the star button of the station playing.
+- **Android Auto button icon** ([#5](https://github.com/Skittle6938/MG4Radio/issues/5)): CarPlay's icon or the chosen app's icon when MG4Dash's button opens them.
+
+**[1.6.3 beta 3](https://github.com/Skittle6938/MG4Radio/releases/tag/v1.6.3-beta.3)**
 - **Android Auto button follows MG4Dash** ([#5](https://github.com/Skittle6938/MG4Radio/issues/5)): the button of the bars opens what MG4Dash's button opens (Android Auto, CarPlay or the chosen app), and the bottom bar shows its name. Needs MG4Dash 1.7.3 beta 24.
 
 **[1.6.3 beta 2](https://github.com/Skittle6938/MG4Radio/releases/tag/v1.6.3-beta.2)**
