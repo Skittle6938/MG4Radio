@@ -30,7 +30,10 @@ On the player, **◀ ▶** go to the previous / next station of the list; a **lo
 
 ### What's new in this fork
 
-**[1.6.3 beta 2](https://github.com/Skittle6938/MG4Radio/releases/tag/v1.6.3-beta.2) (in testing)**
+**[1.6.3 beta 3](https://github.com/Skittle6938/MG4Radio/releases/tag/v1.6.3-beta.3) (in testing)**
+- **Android Auto button follows MG4Dash** ([#5](https://github.com/Skittle6938/MG4Radio/issues/5)): the button of the bars opens what MG4Dash's button opens (Android Auto, CarPlay or the chosen app), and the bottom bar shows its name. Needs MG4Dash 1.7.3 beta 24.
+
+**[1.6.3 beta 2](https://github.com/Skittle6938/MG4Radio/releases/tag/v1.6.3-beta.2)**
 - **RDS station name in MG4Dash**: the stock radio only puts in its media session the RDS name known when it tunes, nearly always empty since the name arrives a few seconds later. Radio Dash now sends MG4Dash the name it receives with the station's frequency: the music card shows the name as the title and the frequency below (MG4Dash 1.7.3 beta 18 or later).
 - **Left bar at full height when MG4Dash hides the fog light button**: with MG4Dash's *Shortcuts menu* option, the vertical bar on the left loses its space at the top left, as in MG4Dash.
 
