@@ -119,7 +119,8 @@ final class Immersive {
      * contenu blanc, en mode clair comme en sombre. Le thème clair les passait en gris clair, illisibles.
      */
     private static void glassButtons(Activity a, View root) {
-        for (String n : new String[]{"btn_radio_autostart", "btn_dab_rds_setting", "btn_dab_search_list", "ib_dab_favorite", "btn_dab_program"}) {
+        // Not the star button: it has its own badge (Palette.tintStars)
+        for (String n : new String[]{"btn_radio_autostart", "btn_dab_rds_setting", "btn_dab_search_list", "btn_dab_program"}) {
             View v = find(root, n);
             if (v != null) glass(a, v, n.equals("btn_dab_search_list") ? "radio_btn_search_list" : null);
         }
