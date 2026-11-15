@@ -30,7 +30,9 @@ On the player, **◀ ▶** go to the previous / next station of the list; a **lo
 
 ### What's new in this fork
 
-**[1.6.3 beta 4](https://github.com/Skittle6938/MG4Radio/releases/tag/v1.6.3-beta.4) (in testing)**
+**[1.6.3](https://github.com/Skittle6938/MG4Radio/releases/tag/v1.6.3) (latest)**: everything in 1.6.3 beta 1 to 4 below: MG4Dash no longer switching back to DAB+ on FM, DAB+ pictures and RDS accents kept, the RDS station name sent to MG4Dash, the left bar at full height when MG4Dash hides the fog light button, an easier to see favourite star, and the Android Auto button following MG4Dash's choice (Android Auto, CarPlay or an app, with its icon). Needs MG4Dash 1.7.3 for the last one.
+
+**[1.6.3 beta 4](https://github.com/Skittle6938/MG4Radio/releases/tag/v1.6.3-beta.4)**
 - **Favourite star easier to see**: a rounded square filled with the theme colour and a white star for a favourite, a dark square with a light hollow star otherwise, on the station tiles of every band and on the star button of the station playing.
 - **Android Auto button icon** ([#5](https://github.com/Skittle6938/MG4Radio/issues/5)): CarPlay's icon or the chosen app's icon when MG4Dash's button opens them.
 
@@ -46,7 +48,7 @@ On the player, **◀ ▶** go to the previous / next station of the list; a **lo
 - **DAB+ picture kept on the player and in MG4Dash**: on a station that sends no logo, the player and MG4Dash showed no picture 5 minutes after the last slideshow, while the station list kept it. They now show that last picture too (recent slideshow, then logo, then last slideshow picture).
 - **RDS accents shown**: RDS has its own character set (é, è, à, ç… are not coded as in Latin-1), and the tuner passes the bytes as they are, so accented letters were invisible. Radio text and station names are now converted, in Radio Dash and in MG4Dash.
 
-**[1.6.2](https://github.com/Skittle6938/MG4Radio/releases/tag/v1.6.2) (latest)**: everything in 1.6.2 beta 1 to 8 below, with DAB+ slideshow pictures shown for 5 minutes at most then the station logo, AM as an option in MG4Dash, the vertical bar following MG4Dash's side and width, the reworked station box, and fixes for older firmwares (SWI68, SWI165…).
+**[1.6.2](https://github.com/Skittle6938/MG4Radio/releases/tag/v1.6.2)**: everything in 1.6.2 beta 1 to 8 below, with DAB+ slideshow pictures shown for 5 minutes at most then the station logo, AM as an option in MG4Dash, the vertical bar following MG4Dash's side and width, the reworked station box, and fixes for older firmwares (SWI68, SWI165…).
 
 **[1.6.2 beta 8](https://github.com/Skittle6938/MG4Radio/releases/tag/v1.6.2-beta.8)**
 - **DAB+ station logos kept, slideshow pictures only while they are current**: a DAB+ station sends two kinds of pictures. Its **logo** comes with the programme guide (SPI) and the radio keeps it per station; its **slideshow** (covers, hosts, ads…) changes all the time. A slideshow picture is now shown for **5 minutes at most**, or until the next one. After that, the player and MG4Dash show the station logo, or no picture when the station has never sent one.
