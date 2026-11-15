@@ -1968,14 +1968,13 @@ public final class RadioDash {
                     tune(st, dab);
                 }
             });
-            // Étoile dans le coin haut droit, sur un rond sombre : la même en DAB+ (sur l'image) et en FM. Station qui
-            // n'est pas en favori : le rond seul (une étoile grise se distinguait mal de l'étoile colorée avec
-            // certaines couleurs d'accent) ; le toucher l'ajoute toujours aux favoris
+            // Favourite badge in the top right corner, the same in every band (Palette.starBadge): filled with the theme
+            // colour and a white star when in favourites, dark with a hollow star otherwise; a touch toggles it
             final boolean on = favKeys.contains(String.valueOf(callQuiet(st, dab ? "getServiceId" : "getChannelNumber")));
-            TextView star = text(a, on ? "★" : "", 24, Palette.starColor());
+            TextView star = text(a, on ? "★" : "☆", 28, on ? Palette.STAR_ON : Palette.STAR_OFF);
             star.setGravity(Gravity.CENTER);
             star.setIncludeFontPadding(false);
-            star.setBackground(panel(a, 0x8C000000, 22, Color.TRANSPARENT));
+            star.setBackground(Palette.starBadge(a, on));
             star.setOnClickListener(new View.OnClickListener() {
                 @Override public void onClick(View v) {
                     Stations.setFavorite(storage, st, band, !on);
@@ -1985,7 +1984,7 @@ public final class RadioDash {
             });
             FrameLayout cell = new FrameLayout(a);
             cell.addView(tile, new FrameLayout.LayoutParams(-1, -2));
-            FrameLayout.LayoutParams slp = new FrameLayout.LayoutParams(dp(a, 44), dp(a, 44), Gravity.TOP | Gravity.END);
+            FrameLayout.LayoutParams slp = new FrameLayout.LayoutParams(dp(a, 48), dp(a, 48), Gravity.TOP | Gravity.END);
             slp.setMargins(0, dp(a, 12), dp(a, 12), 0);
             cell.addView(star, slp);
             LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(tileW, -2);

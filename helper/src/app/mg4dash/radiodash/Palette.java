@@ -166,11 +166,47 @@ public final class Palette {
         return map(0xFF2979FF);
     }
 
+    /** Favourite badge colours (15/11): not in favourites, a dark square with a border and a light hollow star. */
+    public static final int STAR_OFF_FILL = 0xFF202838, STAR_OFF_BORDER = 0xFF4A5670, STAR_OFF = 0xFFC9D1DD;
+    /** White of the favourite star: almost white, so the light theme's recolouring (pure white → dark) leaves it. */
+    public static final int STAR_ON = 0xFFFEFEFE;
+
+    /**
+     * Favourite badge, the same on the station tiles and on the player's star button, in every band: a rounded
+     * square filled with the theme colour when [on], otherwise dark with a 2 dp border.
+     */
+    public static android.graphics.drawable.GradientDrawable starBadge(android.content.Context c, boolean on) {
+        float d = c.getResources().getDisplayMetrics().density;
+        android.graphics.drawable.GradientDrawable g = new android.graphics.drawable.GradientDrawable();
+        g.setCornerRadius(12 * d);
+        g.setColor(on ? starColor() : STAR_OFF_FILL);
+        if (!on) g.setStroke(Math.round(2 * d), STAR_OFF_BORDER);
+        return g;
+    }
+
+    private static android.graphics.drawable.Drawable.ConstantState starOnState;
+
+    /** The player's star button shows the favourite star (the stock radio swaps radio_btn_collection / _uncollection). */
+    private static boolean starOn(ImageView v) {
+        try {
+            if (starOnState == null) {
+                int res = v.getResources().getIdentifier("radio_btn_collection", "drawable", v.getContext().getPackageName());
+                if (res != 0) starOnState = v.getContext().getDrawable(res).getConstantState();
+            }
+            Drawable d = v.getDrawable();
+            return d != null && starOnState != null && d.getConstantState() == starOnState;
+        } catch (Throwable t) {
+            return false;
+        }
+    }
+
     /**
      * Teinte les étoiles de favoris à la couleur du thème : le bouton étoile de la radio (ib_favorite,
      * ib_dab_favorite) et l'étoile des listes de stations (fond de img_radio_list_item_favorite).
      * Ne dépend pas du mode clair : appelé à chaque rafraîchissement.
      */
+    private static final int STAR_TAG = 0x7f7a0010;
+
     public static void tintStars(View v) {
         if (v == null) return;
         try {
@@ -178,7 +214,21 @@ public final class Palette {
                 String name = v.getResources().getResourceEntryName(v.getId());
                 ColorStateList tint = ColorStateList.valueOf(starColor());
                 if (name.equals("ib_favorite") || name.equals("ib_dab_favorite")) {
-                    ((ImageView) v).setImageTintList(tint);
+                    // The player's star button: the badge, 60 dp, star of its own colour (white or light grey)
+                    ImageView iv = (ImageView) v;
+                    iv.setImageTintList(null);
+                    boolean on = starOn(iv);
+                    if (!Boolean.valueOf(on).equals(iv.getTag(STAR_TAG))) {
+                        iv.setBackground(starBadge(iv.getContext(), on));
+                        iv.setTag(STAR_TAG, on);
+                    }
+                    float d = iv.getResources().getDisplayMetrics().density;
+                    android.view.ViewGroup.LayoutParams lp = iv.getLayoutParams();
+                    int side = Math.round(60 * d);
+                    if (lp != null && lp.width != side) { lp.width = side; lp.height = side; iv.setLayoutParams(lp); }
+                    int pad = Math.round(13 * d);
+                    iv.setScaleType(ImageView.ScaleType.FIT_CENTER);
+                    if (iv.getPaddingLeft() != pad) iv.setPadding(pad, pad, pad, pad);
                 } else if (name.equals("img_radio_list_item_favorite")) {
                     v.setBackgroundTintList(tint);
                     ((ImageView) v).setImageTintList(tint);
