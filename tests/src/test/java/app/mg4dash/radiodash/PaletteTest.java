@@ -1,6 +1,7 @@
 package app.mg4dash.radiodash;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -101,5 +102,21 @@ public class PaletteTest {
         assertFalse("7e champ = barre à droite", Bands.amOption("0,0,0,0,0,0,1"));
         assertTrue(Bands.amOption("0,0,0,0,0,0,0,1"));
         assertTrue(Bands.amOption("2,3,1,0,0,0,0, 1 "));
+    }
+
+    /** #5: the Android Auto button follows MG4Dash's choice (10th field) and its other app (11th). */
+    @Test public void projectionChoiceFollowsMg4Dash() {
+        Palette.apply("0,0,0,0,0,0,0,0,0");
+        assertEquals(-1, Palette.aaChoice);
+        assertEquals("com.allgo.app.androidauto/.ProjectionActivity", Palette.projectionTarget());
+        Palette.apply("0,0,0,0,0,0,0,0,0,1,");
+        assertEquals(1, Palette.aaChoice);
+        assertEquals("app.mg4dash/.ui.OpenProjectionActivity", Palette.projectionTarget());
+        Palette.apply("0,0,0,0,0,0,0,0,0,2,com.waze/.FreeMapAppActivity");
+        assertEquals(2, Palette.aaChoice);
+        assertEquals("com.waze/.FreeMapAppActivity", Palette.aaApp);
+        Palette.apply("0,0,0,0,0,0,0,0,0,0,");
+        assertEquals(0, Palette.aaChoice);
+        assertNull(Palette.aaApp);
     }
 }

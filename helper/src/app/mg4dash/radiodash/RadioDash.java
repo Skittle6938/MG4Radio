@@ -264,7 +264,7 @@ public final class RadioDash {
                 {"rd_ic_car", tr(1), DASH + "/.pages.VehicleActivity"},
                 {"rd_ic_snow", tr(2), DASH + "/.pages.ClimateActivity"},
                 {"rd_ic_bolt", tr(3), DASH + "/.pages.EnergyActivity"},
-                {"rd_ic_navigation", "Android Auto", "com.allgo.app.androidauto/.ProjectionActivity"},
+                {"rd_ic_navigation", projectionLabel(a), Palette.projectionTarget()},
                 {"rd_ic_settings", tr(5), "com.saicmotor.settings/.ui.MainActivity"},
         };
         for (final String[] it : items) {
@@ -277,7 +277,7 @@ public final class RadioDash {
             ImageView icon = new ImageView(a);
             int res = a.getResources().getIdentifier(it[0], "drawable", a.getPackageName());
             if (res != 0) icon.setImageResource(res);
-            boolean accent = it[1].equals("Android Auto");
+            boolean accent = it[0].equals("rd_ic_navigation");
             icon.setColorFilter(Palette.map(accent ? ACTION : SUB));
             cell.addView(icon, new LinearLayout.LayoutParams(dp(a, 30), dp(a, 30)));
             TextView label = text(a, it[1], 19, accent ? TEXT : SUB);
@@ -321,7 +321,7 @@ public final class RadioDash {
         clock = null; date = null;
         String[][] items = {
                 {"rd_ic_settings", "com.saicmotor.settings/.ui.MainActivity"},
-                {"rd_ic_projection", "com.allgo.app.androidauto/.ProjectionActivity"},
+                {"rd_ic_projection", Palette.projectionTarget()},
                 {"rd_ic_phone", DASH + "/.pages.PhoneActivity"},
                 {"rd_ic_bolt", DASH + "/.pages.EnergyActivity"},
                 {"rd_ic_car", DASH + "/.pages.VehicleActivity"},
@@ -360,6 +360,18 @@ public final class RadioDash {
         if (Palette.rightBar) blp.setMargins(0, dp(a, 12), dp(a, 16), dp(a, 12));
         else blp.setMargins(dp(a, 16), dp(a, 12), 0, dp(a, 12));
         content.addView(bar, blp);
+    }
+
+    /** Name of the Android Auto button: CarPlay or the chosen app's name when MG4Dash says so (#5). */
+    static String projectionLabel(Activity a) {
+        if (Palette.aaChoice == 1) return "CarPlay";
+        if (Palette.aaChoice == 2 && Palette.aaApp != null) {
+            try {
+                ComponentName cn = ComponentName.unflattenFromString(Palette.aaApp);
+                if (cn != null) return a.getPackageManager().getApplicationLabel(a.getPackageManager().getApplicationInfo(cn.getPackageName(), 0)).toString();
+            } catch (Throwable ignored) {}
+        }
+        return "Android Auto";
     }
 
     private static void openAction(Activity a, String action) {

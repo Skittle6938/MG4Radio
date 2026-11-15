@@ -70,6 +70,21 @@ public final class Palette {
     public static boolean rightBar = false;
     /** Bouton antibrouillards masqué par MG4Dash (menu de raccourcis, 9e champ) : la barre gauche prend toute la hauteur. */
     public static boolean fogHidden = false;
+    /**
+     * Android Auto button chosen in MG4Dash (10th field, #5): 0 Android Auto, 1 CarPlay, 2 another app ([aaApp]);
+     * -1 when MG4Dash does not publish it (older version): the button keeps opening Android Auto.
+     */
+    public static int aaChoice = -1;
+    /** The other app of the Android Auto button (11th field, a component), null otherwise. */
+    public static String aaApp = null;
+
+    /**
+     * What the Android Auto button opens (#5): through MG4Dash, which opens what its own button does (Android Auto,
+     * CarPlay, the chosen app or the phone's projection); Android Auto itself with a MG4Dash that does not say.
+     */
+    public static String projectionTarget() {
+        return aaChoice >= 0 ? "app.mg4dash/.ui.OpenProjectionActivity" : "com.allgo.app.androidauto/.ProjectionActivity";
+    }
     private static String loaded = null;
     private static boolean identity = true;
     private static final Map<TextView, ColorStateList> textDone = new WeakHashMap<>();
@@ -101,6 +116,9 @@ public final class Palette {
             wideBar = p.length > 5 && "1".equals(p[5].trim());
             rightBar = p.length > 6 && "1".equals(p[6].trim());
             fogHidden = p.length > 8 && "1".equals(p[8].trim());
+            aaChoice = -1; aaApp = null;
+            if (p.length > 9) aaChoice = Math.max(0, Math.min(2, Integer.parseInt(p[9].trim())));
+            if (aaChoice == 2 && p.length > 10 && !p[10].trim().isEmpty()) aaApp = p[10].trim();
         } catch (Throwable ignored) {}
         lightMode = lm;
         identity = b == 0 && a == 0 && !lm;
