@@ -2302,7 +2302,7 @@ public final class RadioDash {
         if (id == null) { id = a.getResources().getIdentifier(name, "id", a.getPackageName()); ids.put(name, id); }
         return id == 0 ? null : a.findViewById(id);
     }
-    private static final java.util.HashMap<String, Integer> ids = new java.util.HashMap<>();
+    private static final java.util.Map<String, Integer> ids = new java.util.concurrent.ConcurrentHashMap<>();
 
     /** Méthode sans argument de la radio, par réflexion ; la recherche (getMethod) est gardée en cache, appelée à chaque image. */
     private static Object call(Object target, String name) throws Exception {
@@ -2312,7 +2312,7 @@ public final class RadioDash {
         if (m == null) { m = c.getMethod(name); methods.put(key, m); }
         return m.invoke(target);
     }
-    private static final java.util.HashMap<String, java.lang.reflect.Method> methods = new java.util.HashMap<>();
+    private static final java.util.Map<String, java.lang.reflect.Method> methods = new java.util.concurrent.ConcurrentHashMap<>();
 
     private static Object callQuiet(Object target, String name) {
         try { return call(target, name); } catch (Throwable t) { return null; }

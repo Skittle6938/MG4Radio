@@ -140,8 +140,8 @@ public final class Palette {
     private static boolean identity = true;
     private static final Map<TextView, ColorStateList> textDone = new WeakHashMap<>();
     private static final Set<Object> done = Collections.newSetFromMap(new WeakHashMap<Object, Boolean>());
-    /** Icônes déjà vues en mode clair, par image affichée (une nouvelle image est revue). */
-    private static final Set<Drawable> iconDone = Collections.newSetFromMap(new WeakHashMap<Drawable, Boolean>());
+    /** Icônes déjà vues en mode clair, avec l'image vue (une nouvelle image dans la même vue est revue). */
+    private static final Map<View, Drawable> iconDone = new WeakHashMap<>();
     /** Noms des id de vues : getResourceEntryName coûte cher et lève une exception pour les id générés. */
     private static final Map<Integer, String> names = new HashMap<>();
 
@@ -352,7 +352,7 @@ public final class Palette {
                 }
             }
             if (lightMode && v instanceof ImageView && ((ImageView) v).getDrawable() != null
-                    && !iconDone.contains(((ImageView) v).getDrawable())) {
+                    && iconDone.get(v) != ((ImageView) v).getDrawable()) {
                 ImageView iv = (ImageView) v;
                 Drawable d = iv.getDrawable();
                 String name = name(v);
@@ -363,7 +363,7 @@ public final class Palette {
                         && !name.equals("btn_play_pause") && !name.equals("ib_favorite") && !name.equals("ib_dab_favorite") && !"rd_art".equals(v.getTag())) {
                     iv.setColorFilter(0xFF000000 | TEXT_DARK, android.graphics.PorterDuff.Mode.SRC_IN);
                 }
-                iconDone.add(d);
+                iconDone.put(v, d);
             }
             if (v instanceof ImageView) {
                 ImageView iv = (ImageView) v;
