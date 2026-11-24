@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Checks a built Radio Dash APK: aligned, the radio's package, the version from VERSION in the manifest, the helper
-# module in the dex, and with --cert, signed (v1 and v2) by that platform certificate.
+# module in the dex, and with --cert, signed (v2; apksigner only checks v1 below API 24) by that platform certificate.
 # Usage: scripts/verify_apk.sh APK [--cert platform.x509.pem]
 set -euo pipefail
 root=$(cd "$(dirname "$0")/.." && pwd)
@@ -25,7 +25,6 @@ unzip -p "$apk" classes.dex > "$dex"
 grep -aq 'Lapp/mg4dash/radiodash/RadioDash;' "$dex" || fail "helper module missing from classes.dex"
 if [ -n "$cert" ]; then
   out=$("$bt/apksigner" verify --verbose --print-certs "$apk") || fail "signature does not verify"
-  grep -q 'Verified using v1 scheme (JAR signing): true' <<<"$out" || fail "no v1 signature"
   grep -q 'Verified using v2 scheme (APK Signature Scheme v2): true' <<<"$out" || fail "no v2 signature"
   want=$(openssl x509 -in "$cert" -outform der | sha256sum | cut -d' ' -f1)
   grep -qi "certificate SHA-256 digest: $want" <<<"$out" || fail "not signed with the platform certificate"
