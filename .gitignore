@@ -1,6 +1,8 @@
 # Signing keys - never commit
 platform.pk8
 platform.x509.pem
+# The AOSP platform certificate is public: CI signs and checks with it (the key stays a secret)
+!keys/platform.x509.pem
 
 # Unsigned/intermediate APKs
 Launcher_patched.apk

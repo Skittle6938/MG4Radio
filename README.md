@@ -171,6 +171,8 @@ The redesign is applied on top of `apk/Radio_patched_signed.apk`:
 - `dash/` — modified layouts (all original view IDs kept), drawables, colours and a few smali files (`RadioService$6` for favourites skipping, `RadioMainActivity` for the lifecycle hooks, `RadioMBService` for the direct band command, and others for the RDS text);
 - `helper/src/` — a small Java module (`RadioDash`, `Stations`, `Favorites`, `Bands`, `FmDial`) compiled to smali and added to the app;
 - `build.ps1` — compiles the module, decodes the base APK, applies `dash/`, rebuilds and signs with the AOSP platform test key (not included: see MG4Dash's README to download it).
+- `scripts/build.sh` — the same build on Linux (apktool 2.10.0, Android build-tools), used by GitHub Actions; `scripts/verify_apk.sh` checks the result (alignment, package, version, signature).
+- GitHub Actions: **CI** runs the unit tests, the lint checks and a full APK build on every push; **Publish release** (run by hand from main) tests, builds, signs and publishes a beta (`1.6.5-beta.1`) or an official release (`1.6.5`) from `VERSION` and `release-notes/`.
 
 Install exactly like the original patch below (`adb push` + `pm install -r -f`, or USB stick), then **reboot the head unit**. To go back, reinstall the original `Radio_patched_signed.apk`, or `adb shell pm uninstall com.saicmotor.radio` for the factory radio.
 

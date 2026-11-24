@@ -1,0 +1,113 @@
+# Publishes Radio Dash from main: tests, build, signature with the AOSP platform key, checks, then the GitHub
+# release that MG4Dash's updater reads (first .apk asset). A version with a suffix (1.6.5-beta.1) is a beta
+# (prerelease), without (1.6.5) an official release marked latest.
+# Before running: VERSION holds the version and release-notes/v<version>.md its notes, both on main.
+# Secret PLATFORM_KEY_BASE64: the platform.pk8 key in base64 (certificate: keys/platform.x509.pem).
+name: Publish release
+run-name: Publish Radio Dash ${{ inputs.version }}
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version, for example 1.6.5-beta.1 (beta) or 1.6.5 (official release); must match VERSION'
+        required: true
+        type: string
+      dry_run:
+        description: 'Build and check the signed APK without publishing'
+        type: boolean
+        default: false
+permissions:
+  contents: read
+concurrency:
+  group: publish
+  cancel-in-progress: false
+env:
+  APKTOOL_VERSION: 2.10.0
+  APKTOOL_SHA256: c0350abbab5314248dfe2ee0c907def4edd14f6faef1f5d372d3d4abd28f0431
+  BUILD_TOOLS_VERSION: 34.0.0
+jobs:
+  publish:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: write
+    env:
+      VERSION: ${{ inputs.version }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check version and notes
+        run: |
+          [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-beta\.[0-9]+)?$ ]] || { echo "::error::Version must look like 1.6.5 or 1.6.5-beta.1"; exit 1; }
+          test "$(tr -d '[:space:]' < VERSION)" = "$VERSION" || { echo "::error::VERSION on main is $(cat VERSION), not $VERSION"; exit 1; }
+          test -s "release-notes/v$VERSION.md" || { echo "::error::release-notes/v$VERSION.md is missing"; exit 1; }
+          if gh release view "v$VERSION" --json isDraft --jq .isDraft > "$RUNNER_TEMP/draft" 2>/dev/null \
+              && [ "$(cat "$RUNNER_TEMP/draft")" != true ]; then
+            echo "::error::v$VERSION is already published"; exit 1
+          fi
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.14.3"
+      - name: Unit tests
+        run: gradle -p tests test --no-daemon
+      - name: Lint shell scripts
+        run: shellcheck -S warning scripts/*.sh
+      - name: Android SDK (API 28, build-tools)
+        run: |
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null || true
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-28" "build-tools;$BUILD_TOOLS_VERSION" > /dev/null
+          echo "BUILD_TOOLS=$ANDROID_HOME/build-tools/$BUILD_TOOLS_VERSION" >> "$GITHUB_ENV"
+      - name: apktool
+        run: |
+          curl -fsSL -o "$RUNNER_TEMP/apktool.jar" \
+            "https://github.com/iBotPeaches/Apktool/releases/download/v$APKTOOL_VERSION/apktool_$APKTOOL_VERSION.jar"
+          echo "$APKTOOL_SHA256  $RUNNER_TEMP/apktool.jar" | sha256sum -c -
+          echo "APKTOOL=$RUNNER_TEMP/apktool.jar" >> "$GITHUB_ENV"
+      - name: Build and sign
+        env:
+          PLATFORM_KEY_BASE64: ${{ secrets.PLATFORM_KEY_BASE64 }}
+        run: |
+          test -n "$PLATFORM_KEY_BASE64" || { echo "::error::Missing PLATFORM_KEY_BASE64 signing secret"; exit 1; }
+          key="$RUNNER_TEMP/platform.pk8"
+          trap 'rm -f "$key"' EXIT
+          umask 077
+          printf '%s' "$PLATFORM_KEY_BASE64" | base64 --decode > "$key"
+          scripts/build.sh --key "$key" --cert keys/platform.x509.pem
+      - name: Verify
+        run: |
+          scripts/verify_apk.sh dist/Radio_Dash_signed.apk --cert keys/platform.x509.pem
+          cp dist/Radio_Dash_signed.apk "dist/Radio_Dash_$VERSION.apk"
+          size=$(stat -c %s "dist/Radio_Dash_$VERSION.apk")
+          echo "APK: $size bytes ($(awk "BEGIN { printf \"%.1f\", $size / 1048576 }") MB)" >> "$GITHUB_STEP_SUMMARY"
+      - name: Upload signed APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: radio-dash-${{ inputs.version }}
+          path: dist/Radio_Dash_${{ inputs.version }}.apk
+          retention-days: 14
+      - name: Publish
+        if: ${{ !inputs.dry_run }}
+        run: |
+          title="Radio Dash ${VERSION/-beta./ beta }"
+          apk="dist/Radio_Dash_$VERSION.apk"
+          if [[ "$VERSION" == *-beta.* ]]; then kind=(--prerelease --latest=false); else kind=(--prerelease=false --latest); fi
+          # Assembled as a draft first, so MG4Dash never sees a release without its APK. A retry resumes its own draft.
+          if gh release view "v$VERSION" > /dev/null 2>&1; then
+            tag_sha="$(gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/v$VERSION" --jq .object.sha 2>/dev/null || true)"
+            if [ -n "$tag_sha" ] && [ "$tag_sha" != "$GITHUB_SHA" ]; then echo "::error::Draft tag points at another commit"; exit 1; fi
+          else
+            gh release create "v$VERSION" --target "$GITHUB_SHA" --draft --title "$title" \
+              --notes-file "release-notes/v$VERSION.md"
+          fi
+          gh release upload "v$VERSION" "$apk" --clobber
+          expected="sha256:$(sha256sum "$apk" | cut -d' ' -f1)"
+          digest="$(gh release view "v$VERSION" --json assets --jq ".assets[] | select(.name == \"$(basename "$apk")\") | .digest")"
+          test "$digest" = "$expected" || { echo "::error::Uploaded APK digest differs; the release stays a draft"; exit 1; }
+          gh release edit "v$VERSION" --draft=false "${kind[@]}" --title "$title" --notes-file "release-notes/v$VERSION.md"
+          echo "## Published $title" >> "$GITHUB_STEP_SUMMARY"
+          gh release view "v$VERSION" --json url --jq .url >> "$GITHUB_STEP_SUMMARY"
