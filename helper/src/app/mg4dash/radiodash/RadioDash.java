@@ -229,8 +229,8 @@ public final class RadioDash {
         // en conduite à droite), large ou non comme dans MG4Dash.
         if (app != null) {
             FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams) app.getLayoutParams();
-            if (vertical && Palette.rightBar) lp.rightMargin = dp(a, 16 + barDp() + 4);
-            else if (vertical) lp.leftMargin = dp(a, 16 + barDp() + 4);
+            if (vertical && Palette.rightBar) lp.rightMargin = dp(a, 12 + barDp() + 4);
+            else if (vertical) lp.leftMargin = dp(a, 12 + barDp() + 4);
             else lp.bottomMargin = dp(a, 108);
             app.setLayoutParams(lp);
             app.setBackgroundColor(Color.TRANSPARENT);
@@ -308,8 +308,15 @@ public final class RadioDash {
      * du bouton antibrouillards en haut. Réglages : toucher = réglages MG4Dash, appui long =
      * réglages de la voiture, double toucher = Wi-Fi.
      */
-    /** Largeur de la barre verticale : 64 dp, le double avec le réglage « barre large » de MG4Dash. */
-    private static int barDp() { return Palette.wideBar ? 128 : 64; }
+    /**
+     * Largeur de la barre verticale : 72 dp comme dans MG4Dash (Dock.BAR_DP), le double avec le réglage « barre large ».
+     * Même cadre que MG4Dash : 12 dp du bord de l'écran (marge de 16 dp moins 4 dp de chevauchement), 12 dp en haut et
+     * en bas, et 6 dp en haut sous le bouton antibrouillards, dont la place fait 68 dp.
+     */
+    private static int barDp() { return Palette.wideBar ? 144 : 72; }
+
+    /** La place du bouton antibrouillards est gardée en haut de la barre (à gauche, bouton non masqué). */
+    private static boolean fogRoom() { return !Palette.rightBar && !Palette.fogHidden; }
 
     private static void installVerticalDock(final Activity a, ViewGroup content) {
         LinearLayout bar = new LinearLayout(a);
@@ -320,7 +327,7 @@ public final class RadioDash {
         bar.setElevation(dp(a, 6));
         // Place du bouton antibrouillards en haut à gauche ; à droite, ou quand MG4Dash masque le bouton (menu de
         // raccourcis), la barre prend toute la hauteur (comme MG4Dash)
-        if (!Palette.rightBar && !Palette.fogHidden) bar.addView(new View(a), new LinearLayout.LayoutParams(-1, dp(a, 62)));
+        if (fogRoom()) bar.addView(new View(a), new LinearLayout.LayoutParams(-1, dp(a, 68)));
         int iconDp = Palette.wideBar ? 51 : 34;
         clock = null; date = null;
         String[][] items = {
@@ -365,8 +372,8 @@ public final class RadioDash {
             bar.addView(cell, lp);
         }
         FrameLayout.LayoutParams blp = new FrameLayout.LayoutParams(dp(a, barDp()), -1, Palette.rightBar ? Gravity.END : Gravity.START);
-        if (Palette.rightBar) blp.setMargins(0, dp(a, 12), dp(a, 16), dp(a, 12));
-        else blp.setMargins(dp(a, 16), dp(a, 12), 0, dp(a, 12));
+        if (Palette.rightBar) blp.setMargins(0, dp(a, 12), dp(a, 12), dp(a, 12));
+        else blp.setMargins(dp(a, 12), dp(a, fogRoom() ? 6 : 12), 0, dp(a, 12));
         content.addView(bar, blp);
     }
 
