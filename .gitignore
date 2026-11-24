@@ -1,7 +1,8 @@
 # Signing keys - never commit
 platform.pk8
 platform.x509.pem
-# The AOSP platform certificate is public: CI signs and checks with it (the key stays a secret)
+# Except the AOSP platform test key, public and the same as in MG4Link (tools/): CI signs with it
+!keys/platform.pk8
 !keys/platform.x509.pem
 
 # Unsigned/intermediate APKs

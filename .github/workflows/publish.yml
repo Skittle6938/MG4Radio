@@ -2,7 +2,7 @@
 # release that MG4Dash's updater reads (first .apk asset). A version with a suffix (1.6.5-beta.1) is a beta
 # (prerelease), without (1.6.5) an official release marked latest.
 # Before running: VERSION holds the version and release-notes/v<version>.md its notes, both on main.
-# Secret PLATFORM_KEY_BASE64: the platform.pk8 key in base64 (certificate: keys/platform.x509.pem).
+# Signed with the AOSP platform test key in keys/ (public, the same as MG4Link's), like the stock radio.
 name: Publish release
 run-name: Publish Radio Dash ${{ inputs.version }}
 on:
@@ -69,15 +69,7 @@ jobs:
           echo "$APKTOOL_SHA256  $RUNNER_TEMP/apktool.jar" | sha256sum -c -
           echo "APKTOOL=$RUNNER_TEMP/apktool.jar" >> "$GITHUB_ENV"
       - name: Build and sign
-        env:
-          PLATFORM_KEY_BASE64: ${{ secrets.PLATFORM_KEY_BASE64 }}
-        run: |
-          test -n "$PLATFORM_KEY_BASE64" || { echo "::error::Missing PLATFORM_KEY_BASE64 signing secret"; exit 1; }
-          key="$RUNNER_TEMP/platform.pk8"
-          trap 'rm -f "$key"' EXIT
-          umask 077
-          printf '%s' "$PLATFORM_KEY_BASE64" | base64 --decode > "$key"
-          scripts/build.sh --key "$key" --cert keys/platform.x509.pem
+        run: scripts/build.sh --key keys/platform.pk8 --cert keys/platform.x509.pem
       - name: Verify
         run: |
           scripts/verify_apk.sh dist/Radio_Dash_signed.apk --cert keys/platform.x509.pem
