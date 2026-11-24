@@ -30,7 +30,9 @@ On the player, **◀ ▶** go to the previous / next station of the list; a **lo
 
 ### What's new in this fork
 
-**[1.6.3](https://github.com/Skittle6938/MG4Radio/releases/tag/v1.6.3) (latest)**: everything in 1.6.3 beta 1 to 4 below: MG4Dash no longer switching back to DAB+ on FM, DAB+ pictures and RDS accents kept, the RDS station name sent to MG4Dash, the left bar at full height when MG4Dash hides the fog light button, an easier to see favourite star, and the Android Auto button following MG4Dash's choice (Android Auto, CarPlay or an app, with its icon). Needs MG4Dash 1.7.3 for the last one.
+**[1.6.4](https://github.com/Skittle6938/MG4Radio/releases/tag/v1.6.4) (latest)**: everything in 1.6.4 beta 1 below (MG4Dash's 24 colours, the vertical bar the same size as MG4Dash's), and lighter on the head unit: the layout work done before each frame no longer looks up the radio's views and functions by name every time. Needs MG4Dash 1.7.4 beta 19 or later for the 24 colours.
+
+**[1.6.3](https://github.com/Skittle6938/MG4Radio/releases/tag/v1.6.3)**: everything in 1.6.3 beta 1 to 4 below: MG4Dash no longer switching back to DAB+ on FM, DAB+ pictures and RDS accents kept, the RDS station name sent to MG4Dash, the left bar at full height when MG4Dash hides the fog light button, an easier to see favourite star, and the Android Auto button following MG4Dash's choice (Android Auto, CarPlay or an app, with its icon). Needs MG4Dash 1.7.3 for the last one.
 
 **[1.6.4 beta 1](https://github.com/Skittle6938/MG4Radio/releases/tag/v1.6.4-beta.1)**
 - **24 colours**: Radio Dash follows the new background and button colours of MG4Dash (24 of each instead of 5, backgrounds more clearly tinted), in dark and light mode. Needs MG4Dash 1.7.4 beta 19; with an older MG4Dash, the 5 colours work as before.
