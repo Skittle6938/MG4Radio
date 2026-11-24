@@ -146,6 +146,8 @@ public final class RadioDash {
         }
     }
     private static boolean themeWatched;
+    private static Locale formatLocale;
+    private static SimpleDateFormat hourFormat, dayFormat;
 
     public static void onResume(Activity a) {
         current = a;
@@ -177,8 +179,14 @@ public final class RadioDash {
                 if (Palette.load(a)) { a.recreate(); return; }
                 if (clock != null) {
                     Date now = new Date();
-                    clock.setText(new SimpleDateFormat("HH:mm", Locale.getDefault()).format(now));
-                    date.setText(new SimpleDateFormat("EEE d MMM", Locale.getDefault()).format(now).replace(".", ""));
+                    Locale l = Locale.getDefault();
+                    if (!l.equals(formatLocale)) {
+                        formatLocale = l;
+                        hourFormat = new SimpleDateFormat("HH:mm", l);
+                        dayFormat = new SimpleDateFormat("EEE d MMM", l);
+                    }
+                    clock.setText(hourFormat.format(now));
+                    date.setText(dayFormat.format(now).replace(".", ""));
                 }
                 fixLayout(a);
                 applyArt(a);
@@ -886,8 +894,7 @@ public final class RadioDash {
             for (int i = 0; i < g.getChildCount(); i++) {
                 View t = g.getChildAt(i);
                 if (t.getVisibility() != View.VISIBLE || t.getId() == View.NO_ID || t.getWidth() <= 0) continue;
-                String n = "";
-                try { n = a.getResources().getResourceEntryName(t.getId()); } catch (Throwable ignored) {}
+                String n = Palette.name(t);
                 if (!n.startsWith("layout_tab_")) continue;
                 minL = Math.min(minL, t.getLeft());
                 maxR = Math.max(maxR, t.getRight());
@@ -902,8 +909,7 @@ public final class RadioDash {
             for (int i = 0; i < g.getChildCount(); i++) {
                 View t = g.getChildAt(i);
                 if (t.getVisibility() != View.VISIBLE || t.getId() == View.NO_ID || t.getWidth() <= 0) continue;
-                String n = "";
-                try { n = a.getResources().getResourceEntryName(t.getId()); } catch (Throwable ignored) {}
+                String n = Palette.name(t);
                 if (!n.startsWith("layout_tab_")) continue;
                 tabs.add(t);
                 tabsW += t.getWidth();
@@ -2234,12 +2240,17 @@ public final class RadioDash {
 
     private static Object storage(Context c) {
         try {
-            Class<?> cls = Class.forName("com.saicmotor.radio.model.RadioStorage");
-            return cls.getMethod("getInstance", Context.class).invoke(null, c.getApplicationContext());
+            if (storageInstance == null) {
+                Class<?> cls = Class.forName("com.saicmotor.radio.model.RadioStorage");
+                storageInstance = cls.getMethod("getInstance", Context.class);
+            }
+            return storageInstance.invoke(null, c.getApplicationContext());
         } catch (Throwable t) {
             return null;
         }
     }
+
+    private static java.lang.reflect.Method storageInstance;
 
     private static long currentDabServiceId(Context c) {
         try {
@@ -2282,14 +2293,26 @@ public final class RadioDash {
         }
     }
 
+    /**
+     * Vue de la radio par le nom de son id. getIdentifier cherche le nom dans la table des ressources à chaque appel ;
+     * il est appelé une vingtaine de fois par image dans watchSquare, d'où l'id gardé en cache (il ne change pas).
+     */
     private static View byName(Activity a, String name) {
-        int id = a.getResources().getIdentifier(name, "id", a.getPackageName());
+        Integer id = ids.get(name);
+        if (id == null) { id = a.getResources().getIdentifier(name, "id", a.getPackageName()); ids.put(name, id); }
         return id == 0 ? null : a.findViewById(id);
     }
+    private static final java.util.HashMap<String, Integer> ids = new java.util.HashMap<>();
 
+    /** Méthode sans argument de la radio, par réflexion ; la recherche (getMethod) est gardée en cache, appelée à chaque image. */
     private static Object call(Object target, String name) throws Exception {
-        return target.getClass().getMethod(name).invoke(target);
+        Class<?> c = target.getClass();
+        String key = c.getName() + '#' + name;
+        java.lang.reflect.Method m = methods.get(key);
+        if (m == null) { m = c.getMethod(name); methods.put(key, m); }
+        return m.invoke(target);
     }
+    private static final java.util.HashMap<String, java.lang.reflect.Method> methods = new java.util.HashMap<>();
 
     private static Object callQuiet(Object target, String name) {
         try { return call(target, name); } catch (Throwable t) { return null; }

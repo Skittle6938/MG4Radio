@@ -140,6 +140,24 @@ public final class Palette {
     private static boolean identity = true;
     private static final Map<TextView, ColorStateList> textDone = new WeakHashMap<>();
     private static final Set<Object> done = Collections.newSetFromMap(new WeakHashMap<Object, Boolean>());
+    /** Icônes déjà vues en mode clair, par image affichée (une nouvelle image est revue). */
+    private static final Set<Drawable> iconDone = Collections.newSetFromMap(new WeakHashMap<Drawable, Boolean>());
+    /** Noms des id de vues : getResourceEntryName coûte cher et lève une exception pour les id générés. */
+    private static final Map<Integer, String> names = new HashMap<>();
+
+    /** Nom de l'id de la vue ("" sans id ou pour un id généré), mis en cache. */
+    static String name(View v) {
+        int id = v.getId();
+        if (id == View.NO_ID) return "";
+        synchronized (names) {
+            String n = names.get(id);
+            if (n == null) {
+                try { n = v.getResources().getResourceEntryName(id); } catch (Throwable t) { n = ""; }
+                names.put(id, n);
+            }
+            return n;
+        }
+    }
 
     private Palette() {}
 
@@ -193,6 +211,7 @@ public final class Palette {
         identity = none;
         MAP.clear();
         done.clear();
+        iconDone.clear();
         textDone.clear();
         int[] o = ORIG, n = (lm ? BG_LIGHT : BG)[b];
         for (int i = 0; i < o.length; i++) MAP.put(o[i], n[i]);
@@ -280,8 +299,7 @@ public final class Palette {
         if (v == null) return;
         try {
             if (v instanceof ImageView && v.getId() != View.NO_ID) {
-                String name = v.getResources().getResourceEntryName(v.getId());
-                ColorStateList tint = ColorStateList.valueOf(starColor());
+                String name = name(v);
                 if (name.equals("ib_favorite") || name.equals("ib_dab_favorite")) {
                     // The player's star button: the badge, 60 dp, star of its own colour (white or light grey)
                     ImageView iv = (ImageView) v;
@@ -299,6 +317,7 @@ public final class Palette {
                     iv.setScaleType(ImageView.ScaleType.FIT_CENTER);
                     if (iv.getPaddingLeft() != pad) iv.setPadding(pad, pad, pad, pad);
                 } else if (name.equals("img_radio_list_item_favorite")) {
+                    ColorStateList tint = ColorStateList.valueOf(starColor());
                     v.setBackgroundTintList(tint);
                     ((ImageView) v).setImageTintList(tint);
                 }
@@ -332,11 +351,11 @@ public final class Palette {
                     textDone.put(t, t.getTextColors());
                 }
             }
-            if (lightMode && v instanceof ImageView && !done.contains("icon" + System.identityHashCode(v))) {
+            if (lightMode && v instanceof ImageView && ((ImageView) v).getDrawable() != null
+                    && !iconDone.contains(((ImageView) v).getDrawable())) {
                 ImageView iv = (ImageView) v;
                 Drawable d = iv.getDrawable();
-                String name = "";
-                try { if (v.getId() != View.NO_ID) name = v.getResources().getResourceEntryName(v.getId()); } catch (Throwable ignored) {}
+                String name = name(v);
                 boolean vector = d instanceof android.graphics.drawable.VectorDrawable
                         || (d instanceof DrawableContainer && !(d.getCurrent() instanceof android.graphics.drawable.BitmapDrawable));
                 // Icônes blanches sur fond clair → foncées ; pas le bouton lecture (sur fond coloré) ni le cœur des favoris
@@ -344,7 +363,7 @@ public final class Palette {
                         && !name.equals("btn_play_pause") && !name.equals("ib_favorite") && !name.equals("ib_dab_favorite") && !"rd_art".equals(v.getTag())) {
                     iv.setColorFilter(0xFF000000 | TEXT_DARK, android.graphics.PorterDuff.Mode.SRC_IN);
                 }
-                done.add("icon" + System.identityHashCode(v));
+                iconDone.add(d);
             }
             if (v instanceof ImageView) {
                 ImageView iv = (ImageView) v;

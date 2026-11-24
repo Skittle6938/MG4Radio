@@ -302,8 +302,7 @@ final class Immersive {
     }
 
     private static String name(View v) {
-        if (v.getId() == View.NO_ID) return "";
-        try { return v.getResources().getResourceEntryName(v.getId()); } catch (Exception e) { return ""; }
+        return Palette.name(v);
     }
 
     /** Image presque uniformément noire. */
