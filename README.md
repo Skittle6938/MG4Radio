@@ -4,7 +4,7 @@
 
 This fork restyles the stock SAIC radio app to match **[MG4Dash](https://github.com/Skittle6938/MG4Dash)** and adds favourites-only station switching. It keeps every fix from the original project ([MG4-Radio-DABplus-Fix](https://github.com/Skittle6938/MG4-Radio-DABplus-Fix), documented below).
 
-**Firmware:** built and tested for SWI69. SWI68 is being tested by users ([#2](https://github.com/Skittle6938/MG4Radio/issues/2)) and is not officially supported.
+**Firmware:** built and tested for SWI69, also confirmed by a user on SWI165 R11 ([#7](https://github.com/Skittle6938/MG4Radio/issues/7)). SWI68 is being tested by users ([#2](https://github.com/Skittle6938/MG4Radio/issues/2)) and is not officially supported.
 
 ![MG4Radio, DAB+, dark](screenshots/radio-dash.jpg)
 
