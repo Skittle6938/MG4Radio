@@ -386,19 +386,20 @@ public final class RadioDash {
     }
 
     /**
-     * Icon of the Android Auto button (#5): CarPlay's own icon, as on MG4Dash's bar, or the chosen app's icon, in
-     * colour; null for Android Auto, which keeps the bar's pictogram.
+     * Icon of the Android Auto button (#5, #38): as on MG4Dash's bar, Android Auto and CarPlay share the bar's neutral
+     * pictogram (null); another app keeps its own icon, in greyscale like the bar's other icons.
      */
     static android.graphics.drawable.Drawable projectionIcon(Activity a) {
-        String pkg = Palette.aaChoice == 1 ? "com.allgo.carplay.service"
-                : Palette.aaChoice == 2 && Palette.aaApp != null ? Palette.aaApp.split("/")[0] : null;
-        if (pkg == null) return null;
+        if (Palette.aaChoice != 2 || Palette.aaApp == null) return null;
+        ComponentName cn = ComponentName.unflattenFromString(Palette.aaApp);
+        if (cn == null || cn.getPackageName().equals("com.allgo.carplay.service")
+                || cn.getPackageName().startsWith("com.allgo.app.androidauto")) return null;
         try {
-            if (Palette.aaChoice == 2) {
-                ComponentName cn = ComponentName.unflattenFromString(Palette.aaApp);
-                if (cn != null) return a.getPackageManager().getActivityIcon(cn);
-            }
-            return a.getPackageManager().getApplicationIcon(pkg);
+            android.graphics.drawable.Drawable d = a.getPackageManager().getActivityIcon(cn).mutate();
+            android.graphics.ColorMatrix m = new android.graphics.ColorMatrix();
+            m.setSaturation(0f);
+            d.setColorFilter(new android.graphics.ColorMatrixColorFilter(m));
+            return d;
         } catch (Throwable t) {
             return null;
         }
