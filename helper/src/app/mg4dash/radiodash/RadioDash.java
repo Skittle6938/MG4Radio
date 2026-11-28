@@ -1,6 +1,7 @@
 package app.mg4dash.radiodash;
 
 import android.app.Activity;
+import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -427,13 +428,18 @@ public final class RadioDash {
 
     private static void open(Activity a, String target) {
         try {
-            Intent i;
+            Intent i = new Intent(Intent.ACTION_MAIN).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             if (target.equals("home")) {
-                i = new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME);
+                // The radio's Dash bar returns to Dash even when SAIC remains the default launcher (#153).
+                try {
+                    a.startActivity(i.setClassName(DASH, DASH + ".MainActivity"));
+                    return;
+                } catch (ActivityNotFoundException | SecurityException unavailable) {
+                    i.setComponent(null).addCategory(Intent.CATEGORY_HOME);
+                }
             } else {
-                i = new Intent(Intent.ACTION_MAIN).setComponent(ComponentName.unflattenFromString(target));
+                i.setComponent(ComponentName.unflattenFromString(target));
             }
-            i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             a.startActivity(i);
         } catch (Throwable t) {
             Log.w(TAG, "ouverture " + target + " : " + t);
